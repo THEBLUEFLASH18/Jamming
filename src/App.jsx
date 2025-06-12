@@ -12,7 +12,7 @@ function App() {
 
   return (
     <>
-    {loggedIn? <LoggedIn /> : <ConnectToSpotify  setToken={setToken} setLoggedIn={setLoggedIn}/> }
+    {loggedIn? <LoggedIn token={token} /> : <ConnectToSpotify  setToken={setToken} setLoggedIn={setLoggedIn}/> }
     </>
   )
 }
