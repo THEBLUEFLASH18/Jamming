@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import SearchBar from './SearchBar';
 import SearchResults from './SearchResults';
+import './LoggedIn.css'
 
 
 function LoggedIn({token}) {
@@ -34,7 +35,7 @@ function LoggedIn({token}) {
 
 
   return (
-    <div>
+    <div className='LoggedDiv'>
       <h2>You are logged in!</h2>
       <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm}
        handleSearch={handleSearch} />
