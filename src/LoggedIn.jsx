@@ -5,6 +5,8 @@ import './LoggedIn.css'
 import PlayList from './Playlist'
 import SavedPlaylist from './SavedPlaylist' 
 import PlaylistNameModal from './PlaylistNameModal';
+import PlaylistEditModal from './PlaylistEditModal';
+import CustomAlert from './CustomAlert';
 
 
 function LoggedIn({token}) {
@@ -15,6 +17,14 @@ function LoggedIn({token}) {
     const [ savedPlaylist, setSavedPlaylist ] = useState([])
     const [ isModalOpen, setIsModalOpen ] = useState(false);
     const [ customPlaylistName, setCustomPlaylistName ] = useState('');
+    const [ isEditModalOpen, setIsEditModalOpen ] = useState(false);
+    const [ playlistToEdit, setPlaylistToEdit ] = useState(null);
+    const [ alert, setAlert ] = useState({
+      isOpen: false,
+      type: '',
+      title: '',
+      message: ''
+    });
 
     useEffect(() => {
       fetchUserPlaylists();
@@ -64,6 +74,32 @@ function LoggedIn({token}) {
       
       const closeModal = () => {
         setIsModalOpen(false);
+      };
+
+      const openEditModal = (playlist) => {
+        setPlaylistToEdit(playlist);
+        setIsEditModalOpen(true);
+      };
+      
+      const closeEditModal = () => {
+        setIsEditModalOpen(false);
+        setPlaylistToEdit(null);
+      };
+      
+      const showAlert = (type, title, message) => {
+        setAlert({
+          isOpen: true,
+          type,
+          title,
+          message
+        });
+      };
+      
+      const closeAlert = () => {
+        setAlert(prev => ({
+          ...prev,
+          isOpen: false
+        }));
       };
       
       const handleSaveWithName = async () => {
@@ -138,7 +174,180 @@ function LoggedIn({token}) {
           }
       }
 
+      async function deletePlaylist(playlistId) {
+        try {
+          console.log("Attempting to delete playlist with ID:", playlistId);
+          
+          // First, check if the user is the owner of the playlist
+          const playlistResponse = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
+            headers: {
+              'Authorization': 'Bearer ' + token
+            }
+          });
+          
+          const playlistData = await playlistResponse.json();
+          
+          // Get the current user's ID
+          const userResponse = await fetch('https://api.spotify.com/v1/me', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          const userData = await userResponse.json();
+          
+          if (playlistData.owner.id !== userData.id) {
+            console.error("Cannot delete playlist: You are not the owner");
+            showAlert('error', 'Permission Denied', 'You can only delete playlists that you own.');
+            return;
+          }
+          
+          // If the user is the owner, proceed with deletion (unfollow)
+          const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/followers`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': 'Bearer ' + token
+            }
+          });
+          
+          if (response.status === 200) {
+            console.log("Playlist deleted successfully");
+            
+            // Immediately update the state to remove the deleted playlist
+            setSavedPlaylist(prevPlaylists => 
+              prevPlaylists.filter(playlist => playlist.id !== playlistId)
+            );
+            
+            // Then refresh all playlists to ensure everything is up to date
+            setTimeout(() => {
+              fetchUserPlaylists();
+            }, 500); // Add a small delay to ensure the API has time to process the deletion
+            
+            showAlert('success', 'Success', 'Playlist deleted successfully!');
+          } else {
+            console.error("Failed to delete playlist:", response.status);
+            showAlert('error', 'Error', 'Failed to delete playlist. Please try again.');
+          }
+        } catch (err) {
+          console.error("Error deleting playlist:", err);
+          showAlert('error', 'Error', 'An error occurred while trying to delete the playlist.');
+        }
+      }
+      
+      async function updatePlaylistName(playlistId, newName) {
+        try {
+          console.log("Attempting to update playlist name for ID:", playlistId);
+          
+          // First, check if the user is the owner of the playlist
+          const playlistResponse = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
+            headers: {
+              'Authorization': 'Bearer ' + token
+            }
+          });
+          
+          const playlistData = await playlistResponse.json();
+          
+          // Get the current user's ID
+          const userResponse = await fetch('https://api.spotify.com/v1/me', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          const userData = await userResponse.json();
+          
+          if (playlistData.owner.id !== userData.id) {
+            console.error("Cannot update playlist: You are not the owner");
+            showAlert('error', 'Permission Denied', 'You can only edit playlists that you own.');
+            closeEditModal();
+            return;
+          }
+          
+          // If the user is the owner, proceed with the update
+          const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': 'Bearer ' + token,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              name: newName
+            })
+          });
+          
+          if (response.status === 200) {
+            console.log("Playlist name updated successfully");
+            // Refresh the playlists after update
+            await fetchUserPlaylists();
+            closeEditModal();
+          } else {
+            console.error("Failed to update playlist name:", response.status);
+            showAlert('error', 'Error', 'Failed to update playlist name. Please try again.');
+          }
+        } catch (err) {
+          console.error("Error updating playlist name:", err);
+          showAlert('error', 'Error', 'An error occurred while trying to update the playlist name.');
+        }
+      }
+      
+      async function removeTrackFromPlaylist(playlistId, trackUri) {
+        try {
+          console.log("Attempting to remove track from playlist ID:", playlistId);
+          
+          // First, check if the user is the owner of the playlist
+          const playlistResponse = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
+            headers: {
+              'Authorization': 'Bearer ' + token
+            }
+          });
+          
+          const playlistData = await playlistResponse.json();
+          
+          // Get the current user's ID
+          const userResponse = await fetch('https://api.spotify.com/v1/me', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          const userData = await userResponse.json();
+          
+          if (playlistData.owner.id !== userData.id) {
+            console.error("Cannot modify playlist: You are not the owner");
+            showAlert('error', 'Permission Denied', 'You can only modify playlists that you own.');
+            return;
+          }
+          
+          // If the user is the owner, proceed with removing the track
+          const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': 'Bearer ' + token,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              tracks: [{ uri: trackUri }]
+            })
+          });
+          
+          if (response.status === 200) {
+            console.log("Track removed from playlist successfully");
+            
+            // Update the playlist to edit in state to reflect the change
+            if (playlistToEdit && playlistToEdit.id === playlistId) {
+              const updatedPlaylist = { ...playlistToEdit };
+              updatedPlaylist.tracks.items = updatedPlaylist.tracks.items.filter(
+                item => item.track.uri !== trackUri
+              );
+              updatedPlaylist.tracks.total = updatedPlaylist.tracks.total - 1;
+              setPlaylistToEdit(updatedPlaylist);
+            }
+            
+            // Refresh all playlists
+            await fetchUserPlaylists();
+          } else {
+            console.error("Failed to remove track from playlist:", response.status);
+            showAlert('error', 'Error', 'Failed to remove track from playlist. Please try again.');
+          }
+        } catch (err) {
+          console.error("Error removing track from playlist:", err);
+          showAlert('error', 'Error', 'An error occurred while trying to remove the track from the playlist.');
+        }
+      }
+
       async function fetchUserPlaylists() {
+        console.log("Fetching user playlists...");
         try {
           // First get the user ID
           const userResponse = await fetch('https://api.spotify.com/v1/me', {
@@ -151,33 +360,42 @@ function LoggedIn({token}) {
             return;
           }
           
+          console.log("User ID retrieved:", userData.id);
+          
           // Then fetch the user's playlists
-          const playlistsResponse = await fetch(`https://api.spotify.com/v1/me/playlists`, {
+          const playlistsResponse = await fetch(`https://api.spotify.com/v1/me/playlists?limit=50`, {
             headers: { Authorization: 'Bearer ' + token }
           });
 
-        const playlistsData = await playlistsResponse.json();
-        
-            if (playlistsData.items && playlistsData.items.length > 0) {
-              // For each playlist, fetch the full details including tracks
-              const detailedPlaylists = await Promise.all(
-                playlistsData.items.map(async (playlist) => {
-                  const detailResponse = await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}`, {
-                    headers: { Authorization: 'Bearer ' + token }
-                  });
-                  return await detailResponse.json();
-                })
-              );
-              
-              setSavedPlaylist(detailedPlaylists);
-              console.log("Fetched detailed playlists:", detailedPlaylists);
-            } else {
-              console.log("No playlists found or empty items array:", playlistsData);
-            }
-            } catch (err) {
-              console.error("Error fetching playlists:", err);
-            }
-       }
+          const playlistsData = await playlistsResponse.json();
+          console.log("Playlists data received:", playlistsData);
+          
+          if (playlistsData.items && playlistsData.items.length > 0) {
+            console.log(`Found ${playlistsData.items.length} playlists, fetching details...`);
+            
+            // For each playlist, fetch the full details including tracks
+            const detailedPlaylists = await Promise.all(
+              playlistsData.items.map(async (playlist) => {
+                console.log(`Fetching details for playlist: ${playlist.name} (${playlist.id})`);
+                const detailResponse = await fetch(`https://api.spotify.com/v1/playlists/${playlist.id}`, {
+                  headers: { Authorization: 'Bearer ' + token }
+                });
+                return await detailResponse.json();
+              })
+            );
+            
+            console.log("Setting state with detailed playlists...");
+            setSavedPlaylist([...detailedPlaylists]); // Create a new array to ensure state update
+            console.log("State updated with detailed playlists:", detailedPlaylists);
+          } else {
+            console.log("No playlists found or empty items array:", playlistsData);
+            setSavedPlaylist([]); // Set to empty array if no playlists found
+          }
+        } catch (err) {
+          console.error("Error fetching playlists:", err);
+          showAlert('error', 'Error', 'Error refreshing playlists. Please try again.');
+        }
+      }
 
       
 
@@ -202,7 +420,11 @@ function LoggedIn({token}) {
           <div className="saved-playlist-header">
             <h1>Saved Playlist</h1>
           </div>
-          <SavedPlaylist savedPlaylists={savedPlaylist}/>
+          <SavedPlaylist 
+            savedPlaylists={savedPlaylist} 
+            onDeletePlaylist={deletePlaylist} 
+            onEditPlaylist={openEditModal}
+          />
           <div className="refresh">
             <button onClick={fetchUserPlaylists} className="refresh-button">🔄 Refresh</button>
           </div>
@@ -216,6 +438,22 @@ function LoggedIn({token}) {
         onSave={handleSaveWithName}
         playlistName={customPlaylistName}
         setPlaylistName={setCustomPlaylistName}
+      />
+      
+      <PlaylistEditModal
+        isOpen={isEditModalOpen}
+        onClose={closeEditModal}
+        onSave={updatePlaylistName}
+        playlist={playlistToEdit}
+        onDeleteTrack={removeTrackFromPlaylist}
+      />
+      
+      <CustomAlert
+        isOpen={alert.isOpen}
+        type={alert.type}
+        title={alert.title}
+        message={alert.message}
+        onClose={closeAlert}
       />
    </div>
   );

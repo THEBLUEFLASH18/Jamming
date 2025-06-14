@@ -1,7 +1,7 @@
 import React from 'react';
 import './SavedPlaylist.css';
 
-function SavedPlaylist({ savedPlaylists }) {
+function SavedPlaylist({ savedPlaylists, onDeletePlaylist, onEditPlaylist }) {
   console.log("SavedPlaylist props:", savedPlaylists);
   
   if (!savedPlaylists || savedPlaylists.length === 0) {
@@ -32,7 +32,18 @@ function SavedPlaylist({ savedPlaylists }) {
                 <p>{totalTracks} songs • {playlist.owner?.display_name}</p>
               </div>
               <div className="saved-playlist-item-actions">
-                {/* You can add buttons here later if needed */}
+                <button 
+                  className="playlist-action-button delete-button" 
+                  onClick={() => onDeletePlaylist(playlist.id)}
+                >
+                  🗑️
+                </button>
+                <button 
+                  className="playlist-action-button edit-button" 
+                  onClick={() => onEditPlaylist(playlist)}
+                >
+                  ✏️
+                </button>
               </div>
             </div>
             
