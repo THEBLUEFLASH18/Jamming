@@ -8,6 +8,7 @@ function LoggedIn({token}) {
 
     const [ searchTerm, setSearchTerm ] = useState('');
     const [ tracks, setTracks ] = useState([])
+    const [ playlist, setPlaylist ] = useState([])
 
 
     async function getData(fullUrl) {
@@ -30,18 +31,35 @@ function LoggedIn({token}) {
         const fullUrl = startingUri + '?q=' + q + '&type=' + type
 
         getData(fullUrl)
+      }
 
-    }
+      function addTrack(track){
+        if(track.id){
+          setPlaylist(track.name)
+        }
+        else{
+          console.log("Error occurred while trying to add this sond to your playlist.")
+        }
+      }
 
 
   return (
-    <div className='LoggedDiv'>
-      <h2>You are logged in!</h2>
-      <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm}
-       handleSearch={handleSearch} />
-      <p>This is where search and playlist features will go.</p>
-      <SearchResults tracks={tracks} />
-    </div>
+   <div className='LoggedIn-div'>
+      <div className="search-bar">
+        <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm}
+        handleSearch={handleSearch} />
+      </div>
+      <div className="info-container">
+        <div className='left-side'>
+        <h1>Search Results</h1>
+        <SearchResults tracks={tracks} setTracks={addTrack} />
+        </div>
+        <div className="right-side">
+          <div className="top-box">Your current playlist will live here</div>
+          <div className="bottom-box">Your past playlist will live here</div>
+        </div>
+      </div>
+   </div>
   );
 }
 
