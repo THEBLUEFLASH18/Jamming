@@ -37,12 +37,51 @@
     flex-direction: column;
     height: 80vh;
     width: 50%;
+    background-color: #1f2937;
 }
 
 .top-box {
     height: 50%;
+    overflow-y: scroll;
+    background: linear-gradient(to bottom right, #04ACFA, #6b21a8);
+    border-radius: 20px;
 }
 
+.top-box h1 {
+    text-align: center;
+    color: white;
+}
+
+
 .bottom-box {
-    height: 50%;
+    height: 40%;
+}
+
+.bottom-box h1 {
+    text-align: center;
+    color: white;
+    margin-top: 10px;
+}
+
+.refresh {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.refresh-button {
+    width: 150px;
+    text-align: center;
+    padding: 8px 16px;
+    margin-top: 10px;
+    background-color: #1DB954; /* Spotify green */
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.refresh-button:hover {
+    background-color: #1ed760;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useEffect } from "react";
 import './ConnectToSpotify.css'
 
 
@@ -9,7 +9,7 @@ function ConnectToSpotify({setLoggedIn, setToken }){
         const client_id = 'f957c80ba97745288a7f7b71b4daf815';
         const redirect_uri = 'http://127.0.0.1:5174/';
         const response_type = 'code';
-        const scope = 'user-read-private user-read-email';
+        const scope = 'user-read-private user-read-email playlist-modify-public playlist-modify-private playlist-read-private playlist-read-collaborative';
 
         const generateRandomString = (length) => {
             const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

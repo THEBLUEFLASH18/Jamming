@@ -1,0 +1,75 @@
+.savedplaylist-box {
+  height: 90%; /* Or adjust to fit your layout */
+  background: linear-gradient(to bottom right, #04ACFA, #1e3a8a);
+  padding: 1.5rem;
+  overflow-y: auto;
+  border-radius: 25px;
+}
+
+.saved-playlist-item {
+  background-color: rgba(30, 64, 175, 0.2);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.saved-playlist-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.saved-playlist-item-header h3 {
+  font-weight: 500;
+  font-size: 1rem;
+  color: white;
+  margin: 0;
+}
+
+.saved-playlist-item-header p {
+  font-size: 0.875rem;
+  color: #93c5fd; /* Tailwind blue-300 */
+  margin-top: 0.25rem;
+}
+
+.saved-playlist-item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.saved-playlist-tracks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem; /* space-y-1 */
+}
+
+.playlist-track-row {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #e0f2fe; /* blue-100 */
+  padding: 0.25rem;
+}
+
+.playlist-track-row .track-index {
+  width: 1.5rem;
+  text-align: center;
+  color: #60a5fa; /* blue-400 */
+}
+
+.playlist-track-row .track-title {
+  flex: 1;
+  margin-left: 0.5rem;
+}
+
+.playlist-track-row .track-duration {
+  color: #60a5fa;
+}
+
+.saved-playlist-item-more {
+  text-align: center;
+  color: #60a5fa;
+  font-size: 0.875rem;
+  padding-top: 0.5rem;
+}
